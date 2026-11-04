@@ -1,9 +1,17 @@
 ---
 name: identity-link-integration
-description: Integrate VU Identity Link identity verification into an application's code through its public API (OAuth client credentials, verification links, signed webhooks, verification results). Use when the user wants their software to verify the identity of their own users with Identity Link (also when they just say "VU" for this), create verification links, receive and validate Identity Link webhooks, read or recover a verification result, handle its API errors, or build a quick proof of concept on the Identity Link free plan. Not for VU Cloud Services (the Api-Key APIs such as ID Analysis, Face Analysis or Facial Antispoofing), VU ONE login or tenants, or using the Identity Link portal without writing code.
+description: Integrate VU Identity Link identity verification into an application's
+  code through its public API (OAuth client credentials, verification links, signed
+  webhooks, verification results). Use when the user wants their software to verify
+  the identity of their own users with Identity Link (also when they just say "VU"
+  for this), create verification links, receive and validate Identity Link webhooks,
+  read or recover a verification result, handle its API errors, or build a quick proof
+  of concept on the Identity Link free plan. Not for VU Cloud Services (the Api-Key
+  APIs such as ID Analysis, Face Analysis or Facial Antispoofing), VU ONE login or
+  tenants, or using the Identity Link portal without writing code.
 metadata:
-  version: 1.0.0 # semver of this skill: bump it in the merge request that changes the skill
-  updated: 2026-11-03 # set by the publishing pipeline: the publication date
+  version: 1.0.1
+  updated: '2026-11-04'
 ---
 
 # Identity Link integration
@@ -134,9 +142,9 @@ a fallback, even when nobody asked for one:
 
 ## Identify the integration
 
-Send `User-Agent: identity-link-skill/<version>`, where `<version>` is `metadata.version` from
-this file's header (plus the runtime if useful, for example `identity-link-skill/<version> node/22`),
-on **every** request to the Identity Link API. It lets VU tell
+Read `metadata.version` from this skill’s frontmatter and use that value in
+`User-Agent: identity-link-skill/<version>` on **every** request to the Identity Link API.
+Replace `<version>` with the actual version when generating code; optionally append the runtime. It lets VU tell
 integrations built with this skill apart from others. It carries no personal data.
 
 ## Free plan limits to explain to the user
@@ -151,10 +159,7 @@ integrations built with this skill apart from others. It carries no personal dat
   in progress is refused with `403` (`code: verificationQuotaExceeded`). Handle these as "quota
   exhausted", not as generic errors. The `409` of `POST /links` carries `data.quota.periodEnd` and
   `data.upgradeUrl`: log both, and show them to whoever runs the account, so the error says when it
-  renews and where to buy more. The person being verified only needs a "try again later": the
-  reference implementation throws a `QuotaExhaustedError` that carries both as properties, and the
-  integrator's handler catches it, logs them, and answers the end user a plain message, never
-  `err.message` or the purchase link.
+  renews and where to buy more. The person being verified only needs a "try again later".
 - The account owner also gets an email at 80% of the quota, once per period.
 - Branding, link and data expiration times, and location capture are paid settings: the free plan
   keeps fixed values (30 minutes for the link and for the data).
@@ -180,7 +185,6 @@ integrations built with this skill apart from others. It carries no personal dat
 - [ ] A user asking again after their link expired gets a new link.
 - [ ] `externalUserId` (or `metadata`) maps each verification to the integrator's user.
 - [ ] Quota errors (409/403) are handled and explained: the `409` logs `periodEnd` and `upgradeUrl`,
-      the end user sees only a plain "try again later", and the quota headers of each created link
-      warn before the cut.
+      and the quota headers of each created link warn before the cut.
 - [ ] Walk the user through an end-to-end test: create a link, open it on a phone, complete it,
       and see the webhook arrive and the result read.

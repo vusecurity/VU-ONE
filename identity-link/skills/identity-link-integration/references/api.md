@@ -4,8 +4,7 @@ Base URL: `https://api.portal.vu-one.com/api/v1` (read it from `IDENTITY_LINK_AP
 previous host, `api.identity.vu-one.com`, still works. Interactive docs:
 `https://api.portal.vu-one.com/api-docs/`.
 
-Every request sends `User-Agent: identity-link-skill/<version>`, with `metadata.version` from the
-header of `SKILL.md`. Error bodies are
+Every request sends `User-Agent: identity-link-skill/<version>`. Error bodies are
 `{ "error": "<message>", "code"?: "<stable code>" }`, except the token endpoint and the `409` of the
 link endpoints (below).
 
@@ -154,9 +153,8 @@ import crypto from 'node:crypto';
 import express from 'express';
 
 const BASE = process.env.IDENTITY_LINK_API_URL ?? 'https://api.portal.vu-one.com/api/v1';
-// metadata.version from the header of SKILL.md, written in as a literal.
-const SKILL_VERSION = '<version>';
-const USER_AGENT = `identity-link-skill/${SKILL_VERSION} node/${process.versions.node.split('.')[0]}`;
+// Replace <version> with metadata.version from ../SKILL.md when generating this code.
+const USER_AGENT = `identity-link-skill/<version> node/${process.versions.node.split('.')[0]}`;
 // An empty webhook secret would let anyone sign events: refuse to start without every value.
 function requireEnv(name: string): string {
   const value = process.env[name]?.trim();
@@ -199,15 +197,6 @@ async function api(path: string, init: RequestInit = {}) {
   });
 }
 
-// Quota exhausted. The renewal date and the purchase link are properties, not part of the message:
-// an app that answers err.message would otherwise show "buy more" to the person being verified.
-export class QuotaExhaustedError extends Error {
-  constructor(readonly periodEnd?: string, readonly upgradeUrl?: string) {
-    super('Identity Link verification quota exhausted');
-    this.name = 'QuotaExhaustedError';
-  }
-}
-
 // externalUserId comes from the server-side session, never from the client's request.
 export async function createVerificationLink(externalUserId: string, metadata?: object) {
   const res = await api('/links', {
@@ -215,12 +204,16 @@ export async function createVerificationLink(externalUserId: string, metadata?: 
     body: JSON.stringify({ type: 'FULL FLOW', externalUserId, metadata }),
   });
   if (res.status === 409) {
+    // For whoever runs the account, never for the person being verified.
     const { name, data } = (await res.json()) as {
       name: string;
       data?: { quota?: { periodEnd: string }; upgradeUrl?: string };
     };
-    if (name === 'LinkErrorMaxReached') throw new QuotaExhaustedError(data?.quota?.periodEnd, data?.upgradeUrl);
-    throw new Error(`Identity Link create link refused: ${name}`);
+    throw new Error(
+      name === 'LinkErrorMaxReached'
+        ? `Identity Link quota exhausted until ${data?.quota?.periodEnd}, more at ${data?.upgradeUrl}`
+        : `Identity Link create link refused: ${name}`,
+    );
   }
   if (!res.ok) throw new Error(`Identity Link create link: HTTP ${res.status}`);
   // Absent on a response that does not report the quota: Number(null) would read as 0 left.
