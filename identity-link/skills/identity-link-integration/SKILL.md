@@ -1,9 +1,17 @@
 ---
 name: identity-link-integration
-description: Integrate VU Identity Link identity verification into an application's code through its public API (OAuth client credentials, verification links, signed webhooks, verification results). Use when the user wants their software to verify the identity of their own users with Identity Link (also when they just say "VU" for this), create verification links, receive and validate Identity Link webhooks, read or recover a verification result, handle its API errors, or build a quick proof of concept on the Identity Link free plan. Not for VU Cloud Services (the Api-Key APIs such as ID Analysis, Face Analysis or Facial Antispoofing), VU ONE login or tenants, or using the Identity Link portal without writing code.
+description: Integrate VU Identity Link identity verification into an application's
+  code through its public API (OAuth client credentials, verification links, signed
+  webhooks, verification results). Use when the user wants their software to verify
+  the identity of their own users with Identity Link (also when they just say "VU"
+  for this), create verification links, receive and validate Identity Link webhooks,
+  read or recover a verification result, handle its API errors, or build a quick proof
+  of concept on the Identity Link free plan. Not for VU Cloud Services (the Api-Key
+  APIs such as ID Analysis, Face Analysis or Facial Antispoofing), VU ONE login or
+  tenants, or using the Identity Link portal without writing code.
 metadata:
-  version: 1.0.0 # semver of this skill: bump it in the merge request that changes the skill
-  updated: 2026-11-03 # set by the publishing pipeline: the publication date
+  version: 1.0.1
+  updated: '2026-11-12'
 ---
 
 # Identity Link integration
@@ -135,8 +143,8 @@ a fallback, even when nobody asked for one:
 ## Identify the integration
 
 Send `User-Agent: identity-link-skill/<version>`, where `<version>` is `metadata.version` from
-this file's header (plus the runtime if useful, for example `identity-link-skill/<version> node/22`),
-on **every** request to the Identity Link API. It lets VU tell
+this file's header, written into the generated code as the actual number (plus the runtime if useful,
+for example `identity-link-skill/<version> node/22`), on **every** request to the Identity Link API. It lets VU tell
 integrations built with this skill apart from others. It carries no personal data.
 
 ## Free plan limits to explain to the user

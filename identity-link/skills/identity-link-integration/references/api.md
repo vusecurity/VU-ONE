@@ -154,7 +154,7 @@ import crypto from 'node:crypto';
 import express from 'express';
 
 const BASE = process.env.IDENTITY_LINK_API_URL ?? 'https://api.portal.vu-one.com/api/v1';
-// metadata.version from the header of SKILL.md, written in as a literal.
+// Replace <version> with metadata.version from ../SKILL.md when generating this code.
 const SKILL_VERSION = '<version>';
 const USER_AGENT = `identity-link-skill/${SKILL_VERSION} node/${process.versions.node.split('.')[0]}`;
 // An empty webhook secret would let anyone sign events: refuse to start without every value.
